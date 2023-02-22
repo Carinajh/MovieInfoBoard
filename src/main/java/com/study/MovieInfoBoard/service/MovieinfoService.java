@@ -12,4 +12,6 @@ public interface MovieinfoService {
     MovieinfoEntity getMovieInfoView(Integer id);
 
     void write(MovieinfoEntity entity, MultipartFile multipartFile);
+
+    void updateView(Integer id);
 }
