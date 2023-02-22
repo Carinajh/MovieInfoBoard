@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/board/movie")
@@ -45,20 +46,46 @@ public class MovieboardController {
         String rtn = "";
         MovieinfoEntity entity;
         if(action.equals("view")){
-            LOGGER.info("view버튼 동작호출");
+            LOGGER.info("[movieinfoaction] view버튼 동작호출");
             entity = movieinfoService.getMovieInfoView(id);
             model.addAttribute("movieinfoentity",entity);
             rtn = "movie-view";
         } else if (action.equals("edit")) {
-            LOGGER.info("edit버튼 동작호출");
+            LOGGER.info("[movieinfoaction] edit버튼 동작호출");
             entity = movieinfoService.getMovieInfoView(id);
             model.addAttribute("movieinfoentity",entity);
             rtn = "movie-modify";
         }else{
-            LOGGER.info("알수없는 동작호출");
+            LOGGER.info("[movieinfoaction] 알수없는 동작호출");
             rtn = "movie-all-list";
         }
 
+        return rtn;
+    }
+
+    @GetMapping("/add")
+    public String movieinfoadd(){
+        LOGGER.info("[movieinfoadd] 호출");
+
+        return "movie-add";
+    }
+    @PostMapping("/addpro")
+    public String movieinfoadd(MovieinfoEntity movieinfo,Model model, MultipartFile multipartfile,String action){
+        LOGGER.info("[movieinfoadd-pro] 호출");
+        String rtn = "";
+        if(action.equals("cancel")){
+            LOGGER.info("[movieinfoadd-pro] 등록취소버튼 동작호출");
+            rtn ="movie-all-list";
+        }else if (action.equals("add")){
+            LOGGER.info("[movieinfoadd-pro] 등록버튼 동작호출");
+
+            movieinfoService.write(movieinfo,multipartfile);
+
+            rtn ="movie-all-list";
+        }else{
+            LOGGER.info("[movieinfoadd-pro] 알수없는 동작호출");
+            rtn ="movie-all-list";
+        }
         return rtn;
     }
 }
