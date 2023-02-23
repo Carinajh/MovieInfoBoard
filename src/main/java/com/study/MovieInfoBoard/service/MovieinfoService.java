@@ -14,4 +14,8 @@ public interface MovieinfoService {
     void write(MovieinfoEntity entity, MultipartFile multipartFile);
 
     void updateView(Integer id);
+
+    List<MovieinfoEntity> listOpeningdateDesc();
+
+    void deleteByMovieinfo(Integer id);
 }

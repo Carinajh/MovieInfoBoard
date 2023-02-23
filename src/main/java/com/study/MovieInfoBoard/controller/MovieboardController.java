@@ -1,7 +1,9 @@
 package com.study.MovieInfoBoard.controller;
 
 import com.study.MovieInfoBoard.data.entity.MovieinfoEntity;
+import com.study.MovieInfoBoard.data.entity.MovieuserEntity;
 import com.study.MovieInfoBoard.service.MovieinfoService;
+import com.study.MovieInfoBoard.service.MovieuserService;
 import java.util.Date;
 import java.util.List;
 import org.slf4j.Logger;
@@ -24,16 +26,19 @@ public class MovieboardController {
 
     Logger LOGGER = LoggerFactory.getLogger(MovieboardController.class);
     private MovieinfoService movieinfoService;
+    private MovieuserService movieuserService;
 
     @Autowired
-    public MovieboardController(MovieinfoService movieinfoService) {
+    public MovieboardController(MovieinfoService movieinfoService,
+        MovieuserService movieuserService) {
         this.movieinfoService = movieinfoService;
+        this.movieuserService = movieuserService;
     }
 
     @GetMapping("/list")
     public String movieinfolist(Model model){
         LOGGER.info("[movieinfolist] 호출");
-        List<MovieinfoEntity> list = movieinfoService.getMovieInfoList();
+        List<MovieinfoEntity> list = movieinfoService.listOpeningdateDesc();
         for (MovieinfoEntity entity: list
         ) {
             LOGGER.info("id : {}  title : {}  content : {}",entity.getId(),entity.getTitle(),entity.getContent());
@@ -127,7 +132,7 @@ public class MovieboardController {
         if(action.equals("cancel")){
             LOGGER.info("[movieinfoadd-pro] 등록취소버튼 동작호출");
 
-        }else if (action.equals("modify")){
+        }else if (action.equals("modify")) {
             LOGGER.info("[movieinfoadd-pro] 등록버튼 동작호출");
 //           기존정보업데이트
             temp.setId(temp.getId());
@@ -137,11 +142,67 @@ public class MovieboardController {
             temp.setActor(movieinfo.getActor());
             temp.setDelflg(movieinfo.getDelflg());
             temp.setOpeningdate(movieinfo.getOpeningdate());
-            movieinfoService.write(movieinfo,multipartFile);
 
+            movieinfoService.write(movieinfo, multipartFile);
+        }else if(action.equals("delete")){
+            LOGGER.info("[movieinfoadd-pro] 삭제버튼 동작호출");
         }else{
             LOGGER.info("[movieinfoadd-pro] 알수없는 동작호출");
         }
         return "redirect:/board/movie/list";
+    }
+
+    @GetMapping("/delete/{id}")
+    public String movieinfodelete(@PathVariable("id") Integer id){
+        LOGGER.info("[movieinfodelete] 호출 id : {} ",id);
+
+        movieinfoService.deleteByMovieinfo(id);
+
+        return "redirect:/movie-all-list";
+    }
+
+    @GetMapping("signin")
+    public  String signin(){
+        LOGGER.info("[signin] 호출 ");
+
+        return "sign-in";
+    }
+
+    @PostMapping("signup")
+    public  String signup(MovieuserEntity movieuserEntity,String action){
+        LOGGER.info("[signup] 호출 ");
+        String rtn="";
+        if(action.equals("signin")){
+            LOGGER.info("[signup] sign in 버튼호출 ");
+            rtn="sign-in";
+        } else if (action.equals("signup")) {
+            LOGGER.info("[signup] sign up 버튼호출 ");
+            rtn="movie-signup";
+        } else{
+            LOGGER.info("[signup] 알수없는 호출 ");
+            rtn="sign-in";
+        }
+        return rtn;
+    }
+
+    @PostMapping("signinpro")
+    public  String signinpro(MovieuserEntity movieuserEntity,String action){
+        LOGGER.info("[signinpro] 호출 ");
+        LOGGER.info("[signinpro] {} ",action);
+        String rtn = "";
+        MovieuserEntity temp;
+        if(action.equals("cancel")){
+            LOGGER.info("[signinpro] 등록취소버튼 호출 ");
+            rtn = "sign-in";
+        } else if (action.equals("add")) {
+            LOGGER.info("[signinpro] 유저등록버튼 호출 ");
+            temp = movieuserService.findByUserid(movieuserEntity.getUserid());
+
+            rtn = "movie-signup";
+        }else{
+            LOGGER.info("[signinpro] 알수없는 호출 ");
+            rtn = "sign-in";
+        }
+        return rtn;
     }
 }

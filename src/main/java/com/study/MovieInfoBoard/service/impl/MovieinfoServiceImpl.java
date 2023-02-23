@@ -1,8 +1,7 @@
 package com.study.MovieInfoBoard.service.impl;
 
-import com.study.MovieInfoBoard.data.dto.MovieinfoDto;
 import com.study.MovieInfoBoard.data.entity.MovieinfoEntity;
-import com.study.MovieInfoBoard.data.repository.MoveinfoRepository;
+import com.study.MovieInfoBoard.data.repository.MovienfoRepository;
 import com.study.MovieInfoBoard.service.MovieinfoService;
 import java.io.File;
 import java.io.IOException;
@@ -19,27 +18,28 @@ import org.springframework.web.multipart.MultipartFile;
 public class MovieinfoServiceImpl implements MovieinfoService {
 
     Logger LOGGER = LoggerFactory.getLogger(MovieinfoService.class);
-    private MoveinfoRepository moveinfoRepository;
+    private MovienfoRepository movienfoRepository;
 
     @Autowired
-    public MovieinfoServiceImpl(MoveinfoRepository moveinfoRepository) {
-        this.moveinfoRepository = moveinfoRepository;
+    public MovieinfoServiceImpl(MovienfoRepository movienfoRepository) {
+        this.movienfoRepository = movienfoRepository;
     }
 
     @Override
     public List<MovieinfoEntity> getMovieInfoList() {
         LOGGER.info("[getMovieInfoList] 호출");
-        return moveinfoRepository.findAll();
+        return movienfoRepository.findAll();
     }
 
     @Override
     public MovieinfoEntity getMovieInfoView(Integer id) {
         LOGGER.info("[getMovieInfoView] 호출 : id = {}",id);
-        return moveinfoRepository.findById(id).get();
+        return movienfoRepository.findById(id).get();
     }
 
     @Override
     public void write(MovieinfoEntity movieinfoEntity, MultipartFile multipartFile) {
+        LOGGER.info("[write] 호출 ");
         String filesavepath = System.getProperty("user.dir")+"\\src\\main\\resources\\static\\files"; //프로젝트패스
         UUID uuid = UUID.randomUUID(); //랜덤식별자이름 생성.
         String filename = uuid + "_" + multipartFile.getOriginalFilename(); //랜덤 식별자 이름 + 파일명
@@ -55,7 +55,7 @@ public class MovieinfoServiceImpl implements MovieinfoService {
         movieinfoEntity.setFilepath("/files/"+filename);//파일패스 설정
 
 
-        moveinfoRepository.save(movieinfoEntity);
+        movienfoRepository.save(movieinfoEntity);
     }
 
 
@@ -63,6 +63,20 @@ public class MovieinfoServiceImpl implements MovieinfoService {
     @Transactional
     @Override
     public void updateView(Integer id) {
-        moveinfoRepository.updateView(id);
+
+        LOGGER.info("[updateView] 호출 ");
+        movienfoRepository.updateView(id);
+    }
+
+    @Override
+    public List<MovieinfoEntity> listOpeningdateDesc() {
+        LOGGER.info("[listOpeningdateDesc] 호출 ");
+        return movienfoRepository.listOpeningdateDesc();
+    }
+
+    @Override
+    public void deleteByMovieinfo(Integer id) {
+        LOGGER.info("[deleteByMovieinfo] 호출 ");
+        movienfoRepository.deleteById(id);
     }
 }
