@@ -1,17 +1,21 @@
 package com.study.MovieInfoBoard.controller;
 
+import com.study.MovieInfoBoard.config.CommonConfig;
 import com.study.MovieInfoBoard.data.entity.MovieinfoEntity;
 import com.study.MovieInfoBoard.data.entity.MovieuserEntity;
 import com.study.MovieInfoBoard.service.MovieinfoService;
 import com.study.MovieInfoBoard.service.MovieuserService;
 import java.util.Date;
 import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,10 +43,7 @@ public class MovieboardController {
     public String movieinfolist(Model model){
         LOGGER.info("[movieinfolist] 호출");
         List<MovieinfoEntity> list = movieinfoService.listOpeningdateDesc();
-        for (MovieinfoEntity entity: list
-        ) {
-            LOGGER.info("id : {}  title : {}  content : {}",entity.getId(),entity.getTitle(),entity.getContent());
-        }
+
         model.addAttribute("list",list);
         model.addAttribute("elapsed time","");
         return "movie-all-list";
@@ -115,19 +116,6 @@ public class MovieboardController {
     public String movieinfomodify(@PathVariable("id") Integer id,MovieinfoEntity movieinfo,Model model,String action,MultipartFile multipartFile,
         @RequestParam("openingdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date openingdate){
         LOGGER.info("[movieinfoadd-pro] 호출");
-//        LOGGER.info("[movieinfoadd-pro] {}",multipartFile.getOriginalFilename());
-//        LOGGER.info("getFilepath :{}",movieinfo.getFilepath());
-//        LOGGER.info("getFilename :{}",movieinfo.getFilename());
-//        LOGGER.info("getHit :{}",movieinfo.getHit());
-//        LOGGER.info("getCreated:{}",movieinfo.getCreated());
-//        LOGGER.info("getDelflg:{}",movieinfo.getDelflg());
-//        LOGGER.info("getActor:{}",movieinfo.getActor());
-//        LOGGER.info("getUpdated:{}",movieinfo.getUpdated());
-//        LOGGER.info("getUserid:{}",movieinfo.getUserid());
-//        LOGGER.info("getId:{}",movieinfo.getId());
-//        LOGGER.info("getContent:{}",movieinfo.getContent());
-//        LOGGER.info("getTitle:{}",movieinfo.getTitle());
-//        LOGGER.info("getOpeningdate:{}",movieinfo.getOpeningdate());
         MovieinfoEntity temp = movieinfoService.getMovieInfoView(id);
         if(action.equals("cancel")){
             LOGGER.info("[movieinfoadd-pro] 등록취소버튼 동작호출");
@@ -161,6 +149,7 @@ public class MovieboardController {
         return "redirect:/movie-all-list";
     }
 
+//로그인 화면 표시
     @GetMapping("signin")
     public  String signin(){
         LOGGER.info("[signin] 호출 ");
@@ -168,13 +157,28 @@ public class MovieboardController {
         return "sign-in";
     }
 
+//    로그인화면 로그인 & 회원가입 버튼동작처리
     @PostMapping("signup")
-    public  String signup(MovieuserEntity movieuserEntity,String action){
+    public  String signup(MovieuserEntity movieuserEntity,String action,Model model,
+        HttpServletRequest httpServletRequest){
         LOGGER.info("[signup] 호출 ");
         String rtn="";
+        boolean temp;
         if(action.equals("signin")){
             LOGGER.info("[signup] sign in 버튼호출 ");
-            rtn="sign-in";
+            //로그인기능 구현
+            if( movieuserService.Loginmovieuser(movieuserEntity)){
+                //ID/PW확인완료.세션발급.
+                HttpSession session = httpServletRequest.getSession();// 세션 반환, 없으면 신규 세션 생성하여 반환
+                session.setAttribute(CommonConfig.LOGIN_USER,movieuserEntity);// 세션에 회원 정보 보관
+                rtn="redirect:/board/movie/list";
+            }else{
+                //문제 발생.
+                model.addAttribute("signinFail",true);
+                rtn="sign-in";
+            }
+
+
         } else if (action.equals("signup")) {
             LOGGER.info("[signup] sign up 버튼호출 ");
             rtn="movie-signup";
@@ -184,25 +188,37 @@ public class MovieboardController {
         }
         return rtn;
     }
-
+    //    회원가입화면처리
     @PostMapping("signinpro")
-    public  String signinpro(MovieuserEntity movieuserEntity,String action){
+    public  String signinpro(MovieuserEntity movieuserEntity,String action,
+        Model model){
         LOGGER.info("[signinpro] 호출 ");
         LOGGER.info("[signinpro] {} ",action);
         String rtn = "";
-        MovieuserEntity temp;
+
         if(action.equals("cancel")){
             LOGGER.info("[signinpro] 등록취소버튼 호출 ");
             rtn = "sign-in";
         } else if (action.equals("add")) {
             LOGGER.info("[signinpro] 유저등록버튼 호출 ");
-            temp = movieuserService.findByUserid(movieuserEntity.getUserid());
+            boolean temp = movieuserService.createMovieuser(movieuserEntity);
+            if(temp == true){
+                //입력정보로 회원가입 진행완료
+                LOGGER.info("[signinpro] 회원가입 진행완료 ");
+                rtn="movie-all-list";
+            }else{
+                //입력ID존재함
+                LOGGER.info("[signinpro] 입력ID존재함 ");
+                model.addAttribute("useridFail", true);
+                rtn = "movie-signup";
+            }
 
-            rtn = "movie-signup";
         }else{
             LOGGER.info("[signinpro] 알수없는 호출 ");
             rtn = "sign-in";
         }
         return rtn;
     }
+
+
 }

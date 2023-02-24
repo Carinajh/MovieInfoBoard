@@ -6,4 +6,8 @@ public interface MovieuserService {
 
     MovieuserEntity findByUserid(String id);
 
+    boolean createMovieuser(MovieuserEntity movieuserEntity);
+
+    boolean Loginmovieuser(MovieuserEntity movieuserEntity);
+
 }

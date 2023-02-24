@@ -27,16 +27,32 @@ public class MoveuserServiceImpl implements MovieuserService {
         return movieuserRepository.findByUserid(userid);
     }
 
-    public boolean createMovieuser(String userid,MovieuserEntity movieuserEntity){
-        MovieuserEntity temp = movieuserRepository.findByUserid(userid);
+    public boolean createMovieuser(MovieuserEntity movieuserEntity){
+        MovieuserEntity temp = movieuserRepository.findByUserid(movieuserEntity.getUserid());
+//      LOGGER.info("[createMovieuser] 호출 : movieuserEntity = {}",movieuserEntity.toString());
         boolean flg ;
-        if(temp.equals(null)){
+        if(temp != null){
             flg = false;
         }else{
             movieuserRepository.save(movieuserEntity);
             flg = true;
         }
 
-        return true;
+        return flg;
+    }
+
+    public boolean Loginmovieuser(MovieuserEntity movieuserEntity){
+        MovieuserEntity temp = movieuserRepository.findByUserid(movieuserEntity.getUserid());
+        boolean flg;
+        if(temp != null){
+            if (temp.getUserpw().equals(movieuserEntity.getUserpw())){
+                flg= true;
+            }else {
+                flg=false;
+            }
+        }else {
+            flg = false;
+        }
+        return flg;
     }
 }
