@@ -30,25 +30,33 @@ public class MovieboardController {
 
     Logger LOGGER = LoggerFactory.getLogger(MovieboardController.class);
     private MovieinfoService movieinfoService;
-    private MovieuserService movieuserService;
 
     @Autowired
-    public MovieboardController(MovieinfoService movieinfoService,
-        MovieuserService movieuserService) {
+    public MovieboardController(MovieinfoService movieinfoService) {
         this.movieinfoService = movieinfoService;
-        this.movieuserService = movieuserService;
     }
 
+    //전체 영화 리스트 표시
     @GetMapping("/list")
-    public String movieinfolist(Model model){
+    public String movieinfolist(Model model,HttpServletRequest httpServletRequest){
         LOGGER.info("[movieinfolist] 호출");
         List<MovieinfoEntity> list = movieinfoService.listOpeningdateDesc();
 
         model.addAttribute("list",list);
-        model.addAttribute("elapsed time","");
+        HttpSession session = httpServletRequest.getSession();
+        MovieuserEntity movieuserEntity = (MovieuserEntity)session.getAttribute(CommonConfig.LOGIN_USER);
+        if (movieuserEntity == null){
+            return"sign-in";
+        }
+        LOGGER.info("[session] {}",movieuserEntity.getId());
+        LOGGER.info("[session] {}",movieuserEntity.getName());
+        LOGGER.info("[session] {}",movieuserEntity.getUserpw());
+        LOGGER.info("[session] {}",movieuserEntity.getUserid());
+        LOGGER.info("[session] {}",movieuserEntity.getEmail());
         return "movie-all-list";
     }
 
+    //전체 영화 리스트 화면 보기,수정버튼처리
     @PostMapping("/action/{id}")
     public String movieinfoaction(@PathVariable("id") Integer id,Model model,String action){
         LOGGER.info("[movieinfoaction] 호출 id : {} action : {}",id,action);
@@ -75,12 +83,15 @@ public class MovieboardController {
         return rtn;
     }
 
+//    영화 정보추가
     @GetMapping("/add")
     public String movieinfoadd(){
         LOGGER.info("[movieinfoadd] 호출");
 
         return "movie-add";
     }
+
+//    영화정보추가 화면 버튼처리
     @PostMapping("/addpro")
     public String movieinfoadd(MovieinfoEntity movieinfo,Model model,String action,MultipartFile multipartFile,
         @RequestParam("openingdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date openingdate){
@@ -112,6 +123,7 @@ public class MovieboardController {
         return "redirect:/board/movie/list";
     }
 
+//    영화정보 수정화면 버튼처리
     @PostMapping("/modifypro/{id}")
     public String movieinfomodify(@PathVariable("id") Integer id,MovieinfoEntity movieinfo,Model model,String action,MultipartFile multipartFile,
         @RequestParam("openingdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date openingdate){
@@ -140,6 +152,7 @@ public class MovieboardController {
         return "redirect:/board/movie/list";
     }
 
+//    영화정보 삭제 처리
     @GetMapping("/delete/{id}")
     public String movieinfodelete(@PathVariable("id") Integer id){
         LOGGER.info("[movieinfodelete] 호출 id : {} ",id);
@@ -149,76 +162,7 @@ public class MovieboardController {
         return "redirect:/movie-all-list";
     }
 
-//로그인 화면 표시
-    @GetMapping("signin")
-    public  String signin(){
-        LOGGER.info("[signin] 호출 ");
 
-        return "sign-in";
-    }
-
-//    로그인화면 로그인 & 회원가입 버튼동작처리
-    @PostMapping("signup")
-    public  String signup(MovieuserEntity movieuserEntity,String action,Model model,
-        HttpServletRequest httpServletRequest){
-        LOGGER.info("[signup] 호출 ");
-        String rtn="";
-        boolean temp;
-        if(action.equals("signin")){
-            LOGGER.info("[signup] sign in 버튼호출 ");
-            //로그인기능 구현
-            if( movieuserService.Loginmovieuser(movieuserEntity)){
-                //ID/PW확인완료.세션발급.
-                HttpSession session = httpServletRequest.getSession();// 세션 반환, 없으면 신규 세션 생성하여 반환
-                session.setAttribute(CommonConfig.LOGIN_USER,movieuserEntity);// 세션에 회원 정보 보관
-                rtn="redirect:/board/movie/list";
-            }else{
-                //문제 발생.
-                model.addAttribute("signinFail",true);
-                rtn="sign-in";
-            }
-
-
-        } else if (action.equals("signup")) {
-            LOGGER.info("[signup] sign up 버튼호출 ");
-            rtn="movie-signup";
-        } else{
-            LOGGER.info("[signup] 알수없는 호출 ");
-            rtn="sign-in";
-        }
-        return rtn;
-    }
-    //    회원가입화면처리
-    @PostMapping("signinpro")
-    public  String signinpro(MovieuserEntity movieuserEntity,String action,
-        Model model){
-        LOGGER.info("[signinpro] 호출 ");
-        LOGGER.info("[signinpro] {} ",action);
-        String rtn = "";
-
-        if(action.equals("cancel")){
-            LOGGER.info("[signinpro] 등록취소버튼 호출 ");
-            rtn = "sign-in";
-        } else if (action.equals("add")) {
-            LOGGER.info("[signinpro] 유저등록버튼 호출 ");
-            boolean temp = movieuserService.createMovieuser(movieuserEntity);
-            if(temp == true){
-                //입력정보로 회원가입 진행완료
-                LOGGER.info("[signinpro] 회원가입 진행완료 ");
-                rtn="movie-all-list";
-            }else{
-                //입력ID존재함
-                LOGGER.info("[signinpro] 입력ID존재함 ");
-                model.addAttribute("useridFail", true);
-                rtn = "movie-signup";
-            }
-
-        }else{
-            LOGGER.info("[signinpro] 알수없는 호출 ");
-            rtn = "sign-in";
-        }
-        return rtn;
-    }
 
 
 }

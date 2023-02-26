@@ -41,18 +41,9 @@ public class MoveuserServiceImpl implements MovieuserService {
         return flg;
     }
 
-    public boolean Loginmovieuser(MovieuserEntity movieuserEntity){
+    public MovieuserEntity Loginmovieuser(MovieuserEntity movieuserEntity){
         MovieuserEntity temp = movieuserRepository.findByUserid(movieuserEntity.getUserid());
-        boolean flg;
-        if(temp != null){
-            if (temp.getUserpw().equals(movieuserEntity.getUserpw())){
-                flg= true;
-            }else {
-                flg=false;
-            }
-        }else {
-            flg = false;
-        }
-        return flg;
+
+        return temp;
     }
 }

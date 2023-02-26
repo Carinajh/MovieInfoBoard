@@ -8,6 +8,6 @@ public interface MovieuserService {
 
     boolean createMovieuser(MovieuserEntity movieuserEntity);
 
-    boolean Loginmovieuser(MovieuserEntity movieuserEntity);
+    MovieuserEntity Loginmovieuser(MovieuserEntity movieuserEntity);
 
 }
