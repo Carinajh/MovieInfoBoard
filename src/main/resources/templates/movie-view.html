@@ -82,7 +82,7 @@
 
 <main>
 
-  <section class="py-5 text-center container">
+  <section class="py-5  container">
     <div class="row py-lg-5">
       <div class="col-lg-6 col-md-8 mx-auto">
         <img th:src="@{${movieinfoentity.filepath}}">
@@ -94,6 +94,36 @@
 <!--          <a href="#" class="btn btn-primary my-2">Main call to action</a>-->
           <a href="/board/movie/list" class="btn btn-secondary my-2">목록으로</a>
         </p>
+<!--        댓들작성-->
+        <div class="card">
+          <div class="card-header bi bi-chat-right-dots">댓글작성</div>
+          <form method="post" th:action="/board/movie/addcomment">
+            <input type="hidden" id="postsId" value="{{movieinfoentity.id}}">
+            <div class="card-body">
+              <textarea name="comment" class="form-control" rows="3" placeholder="댓글을 입력하세요"></textarea>
+            </div>
+            <div class="card-footer">
+              <button type="submit" id="btn-comment-save"class="btn btn-sm btn-outline-primary bi bi-pencil-square"> 등록</button>
+            </div>
+          </form>
+        </div>
+<!--        댓글 리스트-->
+        <div class="card">
+          <div class="card-header bi bi-chat-dots">[[${moviecommentcnt}]]  Comments</div>
+
+          <ul class="list-group-flush" th:if = "${moviecommententity != null}" th:each="moviecommententity : ${list}">
+            <li class="list-group-item">
+            <span>
+              <span style="font-size: small">[[${list.userid}]] 유저명</span>
+              <span style="font-size: xx-small">[[${list.createat}]] 작성일</span>&nbsp;
+              <button class="badge bi bi-pencil-square"> 수정</button>
+              <button class="badge bi bi-trash"> 삭제</button>
+            </span>
+            <div>[[${list.comment}]] 댓글내용</div>
+            </li>
+          </ul>
+
+        </div>
       </div>
     </div>
   </section>

@@ -1,8 +1,10 @@
 package com.study.MovieInfoBoard.controller;
 
 import com.study.MovieInfoBoard.config.CommonConfig;
+import com.study.MovieInfoBoard.data.entity.MoviecommentEntity;
 import com.study.MovieInfoBoard.data.entity.MovieinfoEntity;
 import com.study.MovieInfoBoard.data.entity.MovieuserEntity;
+import com.study.MovieInfoBoard.service.MoviecommentService;
 import com.study.MovieInfoBoard.service.MovieinfoService;
 import com.study.MovieInfoBoard.service.MovieuserService;
 import java.util.Date;
@@ -31,34 +33,50 @@ public class MovieboardController {
     Logger LOGGER = LoggerFactory.getLogger(MovieboardController.class);
     private MovieinfoService movieinfoService;
 
+    private MoviecommentService moviecommentService;
+
+//    @Autowired
+//    public MovieboardController(MovieinfoService movieinfoService) {
+//        this.movieinfoService = movieinfoService;
+//    }
+//    @Autowired
+//    public MovieboardController(MoviecommentService moviecommentService) {
+//        this.moviecommentService = moviecommentService;
+//    }
+
     @Autowired
-    public MovieboardController(MovieinfoService movieinfoService) {
+    public MovieboardController(MovieinfoService movieinfoService,
+        MoviecommentService moviecommentService) {
         this.movieinfoService = movieinfoService;
+        this.moviecommentService = moviecommentService;
     }
+
 
     //전체 영화 리스트 표시
     @GetMapping("/list")
-    public String movieinfolist(Model model,HttpServletRequest httpServletRequest){
+//    public String movieinfolist(Model model,HttpServletRequest httpServletRequest){
+    public String movieinfolist(Model model){
         LOGGER.info("[movieinfolist] 호출");
         List<MovieinfoEntity> list = movieinfoService.listOpeningdateDesc();
 
         model.addAttribute("list",list);
-        HttpSession session = httpServletRequest.getSession();
-        MovieuserEntity movieuserEntity = (MovieuserEntity)session.getAttribute(CommonConfig.LOGIN_USER);
-        if (movieuserEntity == null){
-            return"sign-in";
-        }
-        LOGGER.info("[session] {}",movieuserEntity.getId());
-        LOGGER.info("[session] {}",movieuserEntity.getName());
-        LOGGER.info("[session] {}",movieuserEntity.getUserpw());
-        LOGGER.info("[session] {}",movieuserEntity.getUserid());
-        LOGGER.info("[session] {}",movieuserEntity.getEmail());
+//        HttpSession session = httpServletRequest.getSession();
+//        MovieuserEntity movieuserEntity = (MovieuserEntity)session.getAttribute(CommonConfig.LOGIN_USER);
+//        if (movieuserEntity == null){
+//            return"sign-in";
+//        }
+//        LOGGER.info("[session] {}",movieuserEntity.getId());
+//        LOGGER.info("[session] {}",movieuserEntity.getName());
+//        LOGGER.info("[session] {}",movieuserEntity.getUserpw());
+//        LOGGER.info("[session] {}",movieuserEntity.getUserid());
+//        LOGGER.info("[session] {}",movieuserEntity.getEmail());
         return "movie-all-list";
     }
 
     //전체 영화 리스트 화면 보기,수정버튼처리
     @PostMapping("/action/{id}")
-    public String movieinfoaction(@PathVariable("id") Integer id,Model model,String action){
+    public String movieinfoaction(@PathVariable("id") Integer id,Model model,String action,
+        HttpServletRequest httpServletRequest){
         LOGGER.info("[movieinfoaction] 호출 id : {} action : {}",id,action);
 
         String rtn = "";
@@ -68,11 +86,13 @@ public class MovieboardController {
             entity = movieinfoService.getMovieInfoView(id);
             model.addAttribute("movieinfoentity",entity);
             movieinfoService.updateView(id);
+            Moviecommentfind(model);
+
             rtn = "movie-view";
         } else if (action.equals("edit")) {
             LOGGER.info("[movieinfoaction] edit버튼 동작호출");
             entity = movieinfoService.getMovieInfoView(id);
-            LOGGER.info("[movieinfoaction] {}}",entity.getOpeningdate());
+            LOGGER.info("[movieinfoaction] {}",entity.getOpeningdate());
             model.addAttribute("movieinfoentity",entity);
             rtn = "movie-modify";
         }else{
@@ -94,7 +114,8 @@ public class MovieboardController {
 //    영화정보추가 화면 버튼처리
     @PostMapping("/addpro")
     public String movieinfoadd(MovieinfoEntity movieinfo,Model model,String action,MultipartFile multipartFile,
-        @RequestParam("openingdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date openingdate){
+        @RequestParam("openingdate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date openingdate,
+        HttpServletRequest httpServletRequest){
         LOGGER.info("[movieinfoadd-pro] 호출");
         LOGGER.info("[movieinfoadd-pro] {}",multipartFile.getOriginalFilename());
         LOGGER.info("getFilepath :{}",movieinfo.getFilepath());
@@ -114,7 +135,9 @@ public class MovieboardController {
 
         }else if (action.equals("add")){
             LOGGER.info("[movieinfoadd-pro] 등록버튼 동작호출");
+            HttpSession session = httpServletRequest.getSession();
             movieinfo.setDelflg('f');
+            movieinfo.setUserid(((MovieuserEntity)session.getAttribute(CommonConfig.LOGIN_USER)).getUserid());
             movieinfoService.write(movieinfo,multipartFile);
 
         }else{
@@ -163,6 +186,40 @@ public class MovieboardController {
     }
 
 
+//    @PostMapping("/addcomment")
+//    public String moviecommentAdd(MoviecommentEntity moviecomment,String comment,Model model,HttpServletRequest httpServletRequest){
+//        LOGGER.info("[moviecommentAdd] 호출 ");
+//        int movieinfoid = ((MovieinfoEntity) model.getAttribute("movieinfoentity")).getId();
+//        HttpSession session = httpServletRequest.getSession();
+//        MovieuserEntity movieuserEntity = (MovieuserEntity)session.getAttribute(CommonConfig.LOGIN_USER);
+//        MoviecommentEntity moviecommentEntity = new MoviecommentEntity();
+//        moviecommentEntity.setUserid(movieuserEntity.getUserid());
+//        moviecommentEntity.setComment(comment);
+//        moviecommentEntity.setInfoid(movieinfoid);
+//        moviecommentService.saveComment(moviecommentEntity);
+//
+//        Moviecommentfind(model);
+//
+//        return "/board/movie/view";
+//    }
+
+
+    public void Moviecommentfind(Model model) {
+        LOGGER.info("[Moviecommentfind] 호출");
+        LOGGER.info("[Moviecommentfind] {}",
+            ((MovieinfoEntity) model.getAttribute("movieinfoentity")).toString());
+
+        int movieinfoid = ((MovieinfoEntity) model.getAttribute("movieinfoentity")).getId();
+        LOGGER.info("[Moviecommentfind] {}",movieinfoid);
+        List<MoviecommentEntity> moviecommentEntities = moviecommentService.findByInfoid(
+            movieinfoid);
+
+        long cnt = moviecommentService.countByInfoid(movieinfoid);
+        LOGGER.info("[Moviecommentfind] {}",cnt);
+        model.addAttribute("moviecommententity", moviecommentEntities);
+        model.addAttribute("moviecommentcnt",cnt);
+
+    }
 
 
 }
