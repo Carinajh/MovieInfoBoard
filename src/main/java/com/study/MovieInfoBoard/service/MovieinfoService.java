@@ -18,4 +18,5 @@ public interface MovieinfoService {
     List<MovieinfoEntity> listOpeningdateDesc();
 
     void deleteByMovieinfo(Integer id);
+
 }

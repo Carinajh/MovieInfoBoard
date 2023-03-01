@@ -17,7 +17,7 @@ public class HttpInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
         Object handler) throws Exception {
-
+        LOGGER.info("[preHandle] 세션 확인 처리");
         MovieuserEntity temp = (MovieuserEntity)request.getSession().getAttribute(CommonConfig.LOGIN_USER);
         if(temp != null){
             LOGGER.info("[preHandle] preHandle userid : {}",temp.getUserid());
@@ -31,6 +31,7 @@ public class HttpInterceptor implements HandlerInterceptor {
             LOGGER.info("[preHandle] preHandle request URI: {}",request.getRequestURI());
             LOGGER.info("[preHandle] preHandle requested Session Id : {}",request.getRequestedSessionId());
             response.sendRedirect("/board/movie/signin");
+
             return false;
         }
     }

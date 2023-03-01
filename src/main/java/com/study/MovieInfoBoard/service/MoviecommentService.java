@@ -10,5 +10,6 @@ public interface MoviecommentService {
 
     void saveComment(MoviecommentEntity moviecommentEntity);
 
+    void deletebycommentid(Integer id);
 
 }

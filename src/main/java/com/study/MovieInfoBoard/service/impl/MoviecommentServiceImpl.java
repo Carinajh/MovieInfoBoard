@@ -38,4 +38,11 @@ public class MoviecommentServiceImpl implements MoviecommentService {
         LOGGER.info("[MoviecommentServiceImpl] saveComment 호출");
         moviecommentRepository.save(moviecommentEntity);
     }
+
+    @Override
+    public void deletebycommentid(Integer id) {
+        LOGGER.info("[MoviecommentServiceImpl] deletebycommentid 호출");
+        moviecommentRepository.deleteById(id);
+    }
+
 }
