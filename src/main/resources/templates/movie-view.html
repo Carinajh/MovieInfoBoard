@@ -125,7 +125,8 @@
                   <input type="hidden" name="commentid" th:value="${list.id}">
                   <input type="hidden" name="infoid" th:value="${movieinfoentity.id}">
 <!--                  <button type="submit" name="commentaction" value="modify"  class="badge bi bi-pencil-square" style="color:black"> 수정</button>-->
-                  <button type="submit" name="commentaction" value="delete"  class="badge bi bi-trash" style="color:black"> 삭제</button>
+                  <button type="submit" name="commentaction" value="delete"  class="badge bi bi-trash" style="color:black"
+                  th:if="${session.loginmovieuser['userid']} == ${list.userid}"> 삭제</button>
               </span>
               <div>[[${list.comment}]]</div>
                 </form>
